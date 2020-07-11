@@ -1,0 +1,131 @@
+\documentclass{article}
+
+\usepackage{amsmath, amsfonts, amsthm}
+\usepackage{algorithm, algpseudocode}
+
+\newcommand{\tskit}{{\texttt{tskit} }}
+% \newcommand{\halfopen}[2]{[#1, #2)}
+
+\begin{document}
+
+\title{Efficiently Computing Species Trees Distributions Along the Genome}
+\author{Daniel Goldstein}
+\maketitle
+
+
+\section{Introduction}
+\paragraph{}
+The inference of species trees from genomic data is a fundamental problem in
+evolutionary biology. They reveal the genetic proximity and relationship
+through time of different species and broaden our understanding of 
+evolutionary processes. However, there does not generally exist one 
+species tree that describes the evolution of a set of samples from multiple 
+species. Processes like migration and inter-breeding can create genomic
+sequences that reflect alternate species trees from the ``true''
+species tree. Additionally, genetic events like recombination can cause 
+different regions of the genome to reflect different species histories 
+within the same sample. This phenomenon known as Incomplete Lineage Sorting
+requires us to consider a distribution of likelihoods over all possible
+species trees for every position on the genome. Computing these
+distributions often require complex statistical models and are incredibly
+computationally expensive to compute for large sample sizes across a large
+sequence. Here, we discuss a simple approach for computing exact species
+tree distributions that relies on the tree sequence data model. Using tree
+sequences, we can compute these results in record time and scale linearly
+in the number of samples.
+\paragraph{}
+Tree sequences are a very efficient method of storing and processing
+variant data that utilizes the shared genetic material between samples.
+Samples are represented as leaves in a genetic ancestral tree spanning
+a particular interval of the genome. The collection of such trees along
+the entire sequence fully captures the variant data. The data structure
+leverages the high correlation between adjacent trees in the sequence and
+stores the minimal information to transform one tree into the next. This
+achieves high levels of compression with no loss and an efficient way
+to iterate through the data.
+Similarly, we can devise methods that iterate through a tree sequence and
+recompute only the necessary information to calculate the result for the
+following tree. This approach is called an incremental algorithm and is
+the reason this approach can scale to thousands (millions?) of trees
+along the genome.
+
+\section{Method}
+\subsection{Ranking tree topologies}
+\paragraph{}
+Before we can discuss the algorithm for a calculating species trees, we
+need some way to refer to and identify them uniquely, and for that we must
+define species trees and uniqueness on them. In the context of this method,
+we require that species trees be rooted, unordered, series reduced
+and leaf-labelled. This means that the order in which children of a node
+are arranged is irrelevant, all nodes that are not leaves have at least
+two children, and that only leaves, which represent species, are labelled.
+Since there exists a finite number of topologies under this definition
+of equality, we used a combinatorial approach to index, or rank,
+tree topologies.
+This gives us a reversible hash on species trees with which we can
+easily convert back and forth between a tree representation and its
+index among all possible species trees.
+
+\subsection{Species tree distributions on a single tree}
+\paragraph{}
+The method for computing species tree distributions is inspired the method
+\textit{TWISST}. The method works
+by repetitively selecting samples, one from each species, and tracing the
+tree that those samples form within the larger gene tree. Taking each
+sample to represent the species from which it was chosen, we can increment
+the count of sample combinations that reflect that particular topology.
+By exhausting all sample combinations, we achieve an exact distribution
+of species trees embedded in a single gene tree.
+However, this exact approach scales poorly with sample size as the number
+of sample combinations for $n$ samples and $p$ populations is $O(n^p)$ for
+$p \ll n$. Approximations can be obtained by running fewer iterations but
+ensuring a fair approximation adds additional complexity to analyses.
+
+\paragraph{}
+Our method uses a dynamic programming approach to reduce the algorithmic
+complexity to be linear in $n$, while producing an exact distribution per
+combination of species in the tree.
+\begin{algorithm}
+    \caption{Distribution on a single tree}
+    \begin{algorithmic}
+        \State state = []
+
+        \Procedure{LeafTopology}{$u$}
+            \State state[u] $\leftarrow$ \{(u): 0\}
+        \EndProcedure
+
+        \Procedure{InternalTopology}{$u$}
+            \State do things
+        \EndProcedure
+
+        \ForAll{$u$ in leaves}
+            \State \Call{LeafTopology}{$u$}
+        \EndFor
+
+        \ForAll{$u$ in postorder internal nodes}
+            \State topologies = \{\}
+            \ForAll{$(v_0, ..., v_k)$ in combinations of $u$ children}
+                \State ... cross the topologies
+            \EndFor
+        \EndFor
+    \end{algorithmic}
+\end{algorithm}
+In the above algorithm, we compute the total topology distributions for each node
+in a single pass up the tree. The per-node state that we compute is bounded not by the
+number of samples, but by the number of possible species trees, which is only dependent
+on $p$. If we let $t(p)$ be the number of potential species trees, we have that
+\[
+    O(n \sum_{i=1}^p t(p))
+\]
+which since $t(p)$ grows factorially, we can say that the algorithm is simply $O(n t(p)^2)$
+which is still linear in sample size!
+\section{Discussion}
+
+
+\end{document}
+
+
+
+
+
+
