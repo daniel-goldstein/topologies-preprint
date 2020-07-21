@@ -1,6 +1,5 @@
 import sys
 import msprime
-import json
 from tqdm import tqdm
 
 from util import area_plot
@@ -20,17 +19,19 @@ def great_apes(sample_size):
         demography=spec)
 
     print(
-        species_ts.num_samples/1e3, "thousand genomes, ",
-        round(species_ts.num_trees/1e3), "thousand trees")
+        species_ts.num_samples / 1e3, "thousand genomes, ",
+        round(species_ts.num_trees / 1e3), "thousand trees")
 
     return species_ts
+
 
 def run(sample_size):
     ts = great_apes(sample_size)
     species_topologies = [top[0, 1, 2, 3] for top in tqdm(ts.count_topologies(), total=ts.num_trees)]
-    # area_plot(species_topologies,
-    #           ts.breakpoints(as_array=True)[:-1],
-    #           "great_apes_area_plot")
+    area_plot(species_topologies,
+              ts.breakpoints(as_array=True)[:-1],
+              {0: "human", 1: "chimp", 2: "gorilla", 3: "orangutan"},
+              "great_apes_area_plot")
 
 
 if __name__ == '__main__':
