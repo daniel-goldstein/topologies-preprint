@@ -2,6 +2,9 @@
 
 \usepackage{amsmath, amsfonts, amsthm}
 \usepackage{algorithm, algpseudocode}
+\usepackage{graphicx}
+
+\graphicspath{{./images/}}
 
 \newcommand{\tskit}{{\texttt{tskit}}}
 \newcommand{\tsinfer}{{\texttt{tsinfer}}}
@@ -77,7 +80,7 @@ sample to represent the species from which it was chosen, we can identify
 a species tree topology. Tallying the number of sample combinations that
 reflect each unique topology gives a distribution of species trees
 embedded in the single gene tree. By exhausting all sample combinations,
-we achieve an exact distribution.
+we obtain an exact distribution.
 
 However, this exact approach scales poorly with sample size as the number
 of sample combinations for $n$ samples and $p$ populations is $O(n^p)$ for
@@ -87,46 +90,65 @@ account for this approximation in analyses.
 
 Our method uses a dynamic programming approach to reduce the algorithmic
 complexity to be linear in $n$, while producing an exact distribution per
-combination of species in the tree.
-\begin{algorithmic}
-    \State state = []
+combination of species in the tree. The approach relies on the following points:
+\begin{enumerate}
+    % What is the name of a leaf root?
+    \item A leaf root contains a single species tree: that of the species to
+        which the leaf sample belongs.
+    \item An internal node contains the species trees of its children, as
+        well as all combinations of species trees from its children whose
+        sets of species are disjoint.
+\end{enumerate}
+These rules yield a simple, single-pass algorithm from the leaves of the tree
+up to the root. Figure \ref{fig:dp_alg} and Algorithm \ref{alg:dp_alg}
+illustrate this in the case of binary trees, but the same approach generalizes
+to trees any number of polytomies.
 
-    \Procedure{LeafTopology}{$u$}
-        \State state[$u$] $\leftarrow$ \{(u): 0\} // The rank of a root leaf is 0
-    \EndProcedure
+The algorithm state at each node is the unique topologies,
+represented by their ranks, embedded in the subtree under that node, and the
+counts of how many times each topology is represented in the subtree. This
+limits the size of the state to the number of unique species tree topologies,
+not the number of samples. At an internal node $u$, we perform a cartesian
+product of the states of $u$'s children to discover disjoint species trees that
+can be combined under $u$.
 
-    \Procedure{InternalTopology}{$u$}
-        \State topologies = \{\}
-        \State propagate child topologies  %TODO
-        \State cross child topologies  %TODO
-        \State state[$u$] = topologies
-    \EndProcedure
+\begin{figure}[t]
+    \includegraphics[scale=0.5]{dp_alg}
+    \centering
+    \caption{Counting embedded species trees at an internal node}
+    \label{fig:dp_alg}
+\end{figure}
 
-    \ForAll{$u$ in leaves}
-        \State \Call{LeafTopology}{$u$}
-    \EndFor
+\begin{algorithm}
+\label{alg:dp_alg}
+    \caption{Computing species tree topologies in a single gene tree}
+    \begin{algorithmic}
+        \State state = []
 
-    \ForAll{$u$ in postorder internal nodes}
-        \State \Call{InternalTopology}{$u$}
-    \EndFor
-\end{algorithmic}
-In the above algorithm, we compute the total topology distributions for each node
-in a single pass up the tree. The savings arise when we don't need to repeat
-traversals of subsets of samples 
+        \ForAll{$u$ in leaves}
+        \State state[$u$] $\leftarrow$ \{(species(u)): 0\} // The rank of a root leaf is 0
+        \EndFor
 
-The per-node state that we compute is bounded not by the
-number of samples, but by the number of possible species trees, which is only dependent
-on $p$. If we let $t(p)$ be the number of potential species trees, we see that
-the algorithm complexity is
+        \ForAll{$u$ in postorder internal nodes}
+            \State topologies = \{\}
+            \State topologies $\leftarrow$ propagate child topologies // TODO
+            \State topologies $\leftarrow$ join disjoint child topologies // TODO
+            \State state[$u$] = topologies
+        \EndFor
+        \State \Return state[root]
+    \end{algorithmic}
+\end{algorithm}
+If we let $t(p)$ be the number of unique tree topologies with $p$ leaves,
+we get that the algorithmic complexity is
 \[
-    O(n \sum_{i=1}^p t(p)^2)
+    O(n \big(\sum_{i=1}^p t(i)\big)^2) = O(n t(p)^2)
 \]
-Since $t(p)$ grows factorially, we can say that the algorithm is 
-$O(n t(p)^2)$. Most importantly, this algorithm is linear in the sample size.
+since $t(p)$ grows factorially in $p$. We know however that $p \ll n$, so is
+dominated by a runtime linear in $n$.
 
 This algorithm also has the nice property that it works on gene trees
 that have not completely coalesced. Instead of the final result being
-\texttt{state[u]}, we simply take the union of the topology distributions
+\texttt{state[root]}, we simply take the union of the topology distributions
 from each root.
 
 \subsection{Spanning a genome}
@@ -137,13 +159,12 @@ where the subtree under a node is unaffected by a tree transition.
 As we transition from one tree to the next, instead of constructing
 the next tree from scratch we perform a Subtree-Prune-and-Regraft (SPR) operation
 on the current tree to obtain the next.
-When a node is removed or inserted into the tree during an SPR, we don't
-need to compute the topologies within the subtree because from the perspective
-of those nodes nothing has changed.
-Instead we need only ``pick up'' the previous algorithm at that node and traverse
+When a node $u$ is removed or inserted into the tree during an SPR, we don't
+need to compute the topologies within the subtree.
+Instead we need only ``pick up'' the previous algorithm at $u$ and traverse
 upward toward the root.
 Since there is a constant number of edges removed and inserted between trees,
-this process only takes $O(\log(n))$ time.
+this process takes only $O(\log(n))$ time.
 
 \section{Discussion}
 We test this functionality by examining a \msprime{} simulation. We've simulated
@@ -161,7 +182,7 @@ small. More efficient indexing methods may be useful when computing on larger
 numbers of species. Additionally, the higher the correlation between trees the
 better the gains from using an incremental approach. Current inference methods
 like \tsinfer{} can generate succinct tree sequences from variant data, but might
-not currently achieve the compression extant in simulated tree sequences and thus
+not achieve the compression exhibited in simulated tree sequences and thus
 are slower to compute on. Nevertheless, this does mean that improvements in
 inference technology have a compounding effect on the speed and accuracy
 at which incremental algorithms, such as this one, operate.
