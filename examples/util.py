@@ -1,9 +1,15 @@
 import os
 import collections
 import matplotlib.pyplot as plt
-import seaborn as sns
+# import seaborn as sns
 
 import tskit
+
+
+def plot_speed(times, outfile):
+    plt.plot(range(len(times)), times)
+    plt.savefig(f"plots/{outfile}.png")
+    plt.close()
 
 
 def area_plot(counters, breakpoints, leaf_labels, outfile):
@@ -22,6 +28,7 @@ def area_plot(counters, breakpoints, leaf_labels, outfile):
         os.mkdir("plots")
 
     plt.savefig(f"plots/{outfile}.png")
+    plt.close()
 
     # Save svgs of the topologies with the corresponding color to the plot
     windows = zip(breakpoints, breakpoints[1:])
