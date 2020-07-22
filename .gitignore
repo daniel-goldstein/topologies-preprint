@@ -3,3 +3,4 @@
 *.pdf
 topenv/
 __pycache__/
+.DS_store

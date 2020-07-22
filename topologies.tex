@@ -1,8 +1,9 @@
 \documentclass{article}
 
+\usepackage{geometry}
 \usepackage{amsmath, amsfonts, amsthm}
 \usepackage{algorithm, algpseudocode}
-\usepackage{graphicx}
+\usepackage{graphicx, subcaption, float}
 
 \graphicspath{{./images/}}
 
@@ -23,21 +24,20 @@
 The inference of species trees from genomic data is a fundamental problem in
 evolutionary biology. They reveal the genetic proximity and relationship
 through time of different species and broaden our understanding of 
-evolutionary processes. However, there does not generally exist one 
+evolutionary processes. However, there is not generally one
 species tree that describes the evolution of a set of samples from multiple 
-species. Processes like migration and inter-breeding can create genomic
-sequences that reflect alternate species trees.
-Genetic events like recombination can cause
-different regions of the genome to reflect different species histories 
-within the same sample. This phenomenon known as Incomplete Lineage Sorting
-requires us to consider a distribution of likelihoods over all possible
-species trees for every position on the genome. Computing these
-distributions often require complex statistical models and are
-computationally expensive to compute for large sample sizes across a large
-sequence. Here, we discuss a simple approach for computing exact species
-tree distributions that relies on the tree sequence data model. Using tree
-sequences, we can compute these results in record time and scale linearly
-in the number of samples.
+species. Processes like admixture can create genetic sequences that reflect
+alternate species trees.
+Genetic events like recombination can cause different regions of the genome
+to reflect different species histories within the same sample.
+So instead of a single species tree we must consider a distribution
+of likelihoods over all possible topologies for every position on the genome.
+Inferring these distributions from variant data often requires complex
+statistical models and are expensive to compute across large sequences.
+Here, we discuss a simple approach for computing exact
+species tree distributions that relies on the tree sequence data model.
+Using tree sequences, we can compute these results in record time and
+scale well in terms of sample size and sequence length.
 
 Tree sequences are a lossless, efficient method of storing and processing
 variant data that utilizes the shared genetic material between samples.
@@ -45,8 +45,8 @@ Samples are represented as leaves in a genetic ancestral tree that spans
 a particular interval of the genome. The data structure
 leverages the high correlation between adjacent trees in the sequence and
 stores the minimal information to transform one tree into the next. This
-greatly decreases storage space and yields an efficient way to iterate through
-the data.
+significantly decreases storage space and yields an efficient way to iterate
+through the data.
 
 Using this form iteration, we can design tree sequence algorithms to
 recompute only the necessary information required to calculate the result
@@ -64,10 +64,10 @@ we require that species trees be rooted, leaf-labelled trees with no
 unary nodes.
 Since there exists a finite number of topologies under this definition
 of equality, we can use a combinatorial approach to index, or rank,
-tree topologies in an enumeration of all possible topologies.
+tree topologies.
 This rank serves as a reversible hash on species trees, meaning we can
 easily convert back and forth between a tree representation and its
-index among all possible species trees. The rank is used in the following
+rank among all possible species trees. The rank is used in the following
 algorithms to count occurences of unique species tree topologies.
 
 \subsection{Species tree distributions on a single tree}
@@ -75,22 +75,23 @@ algorithms to count occurences of unique species tree topologies.
 The method for computing species trees distributions is inspired by the method
 \twisst, which works
 by repetitively selecting samples, one from each species, and tracing the
-embedded tree formed by those samples in the larger gene tree. Taking each
-sample to represent the species from which it was chosen, we can identify
-a species tree topology. Tallying the number of sample combinations that
+embedded tree that they form within the larger gene tree. Taking each
+sample to represent the species from which it was chosen, we identify
+the species tree topology reflected by that single sample combination.
+Tallying the number of sample combinations that
 reflect each unique topology gives a distribution of species trees
 embedded in the single gene tree. By exhausting all sample combinations,
 we obtain an exact distribution.
 
 However, this exact approach scales poorly with sample size as the number
 of sample combinations for $n$ samples and $p$ populations is $O(n^p)$ for
-$p \ll n$. Approximations can be obtained by running fewer iterations but
-at the cost of needing to choose a fair subset of sample combinations and
-account for this approximation in analyses.
+$p \ll n$. Approximations can be obtained by running a set number of iterations
+but at the cost of needing to choose a fair subset of sample combinations and
+accounting for this approximation in analyses.
 
 Our method uses a dynamic programming approach to reduce the algorithmic
-complexity to be linear in $n$, while producing an exact distribution per
-combination of species in the tree. The approach relies on the following points:
+complexity to be linear in $n$, while also producing an exact distribution.
+The approach relies on the following points:
 \begin{enumerate}
     % What is the name of a leaf root?
     \item A leaf root contains a single species tree: that of the species to
@@ -100,9 +101,9 @@ combination of species in the tree. The approach relies on the following points:
         sets of species are disjoint.
 \end{enumerate}
 These rules yield a simple, single-pass algorithm from the leaves of the tree
-up to the root. Figure \ref{fig:dp_alg} and Algorithm \ref{alg:dp_alg}
+up to the root. Figure~\ref{fig:dp_alg} and Algorithm~\ref{alg:dp_alg}
 illustrate this in the case of binary trees, but the same approach generalizes
-to trees any number of polytomies.
+to trees with any number of polytomies.
 
 The algorithm state at each node is the unique topologies,
 represented by their ranks, embedded in the subtree under that node, and the
@@ -112,7 +113,7 @@ not the number of samples. At an internal node $u$, we perform a cartesian
 product of the states of $u$'s children to discover disjoint species trees that
 can be combined under $u$.
 
-\begin{figure}[t]
+\begin{figure}[H]
     \includegraphics[scale=0.5]{dp_alg}
     \centering
     \caption{Counting embedded species trees at an internal node}
@@ -168,12 +169,63 @@ this process takes only $O(\log(n))$ time.
 
 \section{Discussion}
 We test this functionality by examining a \msprime{} simulation. We've simulated
-a quarter million 1mb genomes distributed evenly between four species: orangutan,
+25 thousand 1mb genomes distributed evenly between four species: orangutan,
 gorilla, chimp and human. This produced a \tskit{} tree sequence with
-INSERT TREE NUMBER trees.
+31 thousand trees. Figure~\ref{fig:great_apes} ilustrates the four unique
+species tree topologies represented in the tree sequence, along with the positions
+along the sequence they were observed and the frequency of each.
 
-To see the benefits of the incremental algorithm, we can examine the runtime for
-the first tree vs the subsequent trees in the sequence.
+\begin{figure}[H]
+    \begin{minipage}{.48\textwidth}
+        \begin{subfigure}{\linewidth}
+            \includegraphics[scale=0.48]{great_apes_area_plot.png}
+        \end{subfigure}
+    \end{minipage}
+    \begin{minipage}{.48\textwidth}
+        \begin{minipage}{.4\textwidth}
+            \begin{subfigure}[b]{\linewidth}
+                \includegraphics[scale=0.3]{tree_0.png}
+                \subcaption{1.79\% weighted}
+            \end{subfigure}
+            \begin{subfigure}[b]{\linewidth}
+                \includegraphics[scale=0.3]{tree_1.png}
+                \subcaption{1.79\% weighted}
+            \end{subfigure}
+        \end{minipage}
+        \begin{minipage}{.4\textwidth}
+            \begin{subfigure}[b]{\linewidth}
+                \includegraphics[scale=0.3]{tree_2.png}
+                \subcaption{96.41\% weighted}
+            \end{subfigure}
+            \begin{subfigure}[b]{\linewidth}
+                \includegraphics[scale=0.3]{tree_3.png}
+                \subcaption{0.01\% weighted}
+            \end{subfigure}
+        \end{minipage}
+    \end{minipage}
+    \centering
+    \caption{Great apes simulation species trees across the genome}
+    \label{fig:great_apes}
+\end{figure}
+
+The performance benefits of using an incremental approach is evident when
+examining the time taken per tree. Computing Algorithm~\ref{alg:dp_alg}
+took just over 1.4 seconds as it computed the topologies for every node in
+the 25 thousand leaf tree. For subsequent trees, however, only partial
+applications of the algorithm must be made to update species topologies, and
+\tskit{} is able to process over 130 trees per second, resulting in an overall
+runtime of 4 minutes and 28 seconds.
+
+\begin{figure}[H]
+    \includegraphics[scale=0.8]{incremental_times.png}
+    \centering
+    \caption{Per-tree wall time for computing species trees along a sequence}
+    \label{fig:dp_alg}
+\end{figure}
+
+% TODO
+I think this would look much better as trees per second, but this was easier
+for late-night me. Also none of these graphs have axes labels.
 
 It is worth noting that this algorithm can be used very broadly, but is optimized
 for a particular use-case. The combinatorial method of ranking trees contributes
