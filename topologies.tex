@@ -1,4 +1,5 @@
 \documentclass{article}
+% \twocolumn
 
 \usepackage{geometry}
 \usepackage{amsmath, amsfonts, amsthm}
@@ -69,7 +70,7 @@ algorithms to count occurences of unique species tree topologies.
 
 \subsection{Species trees distributions on a single tree}
 
-The method for computing species trees distributions is inspired by the method
+The method for computing species trees distributions is inspired by
 \twisst, which works
 by repetitively selecting samples, one from each species, and tracing the
 embedded tree that they form within the larger gene tree. Taking each
@@ -109,8 +110,8 @@ to trees with any number of polytomies.
     \label{fig:dp_alg}
 \end{figure}
 
-The algorithm state at each node is the unique topologies,
-represented by their ranks, embedded in the subtree under that node, and the
+The algorithm state at each node is the unique topologies beneath that node,
+represented by their ranks, and the
 counts of how many times each topology is represented in the subtree. This
 limits the size of the state to the number of unique species tree topologies,
 not the number of samples. At an internal node $u$, we perform a cartesian
@@ -118,8 +119,8 @@ product of the states of $u$'s children to discover disjoint species trees that
 can be combined under $u$.
 
 \begin{algorithm}
-\label{alg:dp_alg}
     \caption{Computing species tree topologies in a single gene tree}
+    \label{alg:dp_alg}
     \begin{algorithmic}
         \State state = []
 
@@ -165,12 +166,15 @@ Since there is a constant number of edges removed and inserted between trees
 in a tree sequence, this process takes only $O(\log(n)t(p)^2)$ time.
 
 \section{Discussion}
-We test this functionality by examining a \msprime{} simulation in which we've simulated
-25 thousand 1mb genomes distributed evenly between four species: orangutan,
-gorilla, chimp and human. This produced a \tskit{} tree sequence with
-31 thousand trees. Figure~\ref{fig:great_apes} ilustrates the four unique
+We test this functionality by examining a \msprime{} simulation of four species:
+orangutan, gorilla, chimp and human. The simulation was seeded with the underlying
+species trees represented in Newick form as: (orangutan, (gorilla, (human, chimp))).
+Sampling 1 million 1mb genomes distributed evenly among the four species
+produced a \tskit{} tree sequence with 43 thousand trees.
+Figure~\ref{fig:great_apes} ilustrates the four unique
 species tree topologies represented in the tree sequence, the positions
-along the sequence they were observed, and the frequency of each.
+along the sequence they were observed, and the frequency of each weighted by
+the length of the sequence they span.
 
 \begin{figure}[H]
     \begin{minipage}{.48\textwidth}
@@ -199,41 +203,53 @@ along the sequence they were observed, and the frequency of each.
                 \subcaption{0.01\% weighted}
             \end{subfigure}
         \end{minipage}
+        \centering
     \end{minipage}
     \centering
-    \caption{Great apes simulation species trees across the genome}
+    \caption{Great apes simulation species trees across the genome TODO add labels!}
     \label{fig:great_apes}
 \end{figure}
 
-The performance benefits of using an incremental approach is evident when
-examining the time taken per tree. Computing Algorithm~\ref{alg:dp_alg}
-took just over 1.4 seconds as it computed the topologies for every node in
-the 25 thousand leaf tree. For subsequent trees, however, only partial
-applications of the algorithm must be made to update species topologies, and
-\tskit{} is able to process over 130 trees per second, resulting in an overall
-runtime of 4 minutes and 28 seconds.
+The results are overwhelmingly aligned with the species tree that seeded the
+simulation. Though there do exist three alternative topologies, where the
+genetic material coalesces differently. On left, we can identify the exact
+intervals where these anomalous topologies are observed.
 
+The performance benefits of using an incremental approach is evident when
+examining the execution time per tree. Figure~\ref{fig:incremental_times}
+show the per-tree wall time and the rate of trees processed per second
+for the great apes simulation.
 \begin{figure}[H]
-    \includegraphics[scale=0.75]{incremental_times.png}
+    \includegraphics[height=6cm]{trees_per_sec.png}
     \centering
-    \caption{Per-tree wall time for computing species trees along a sequence}
+    \caption{Trees processed per second across great apes simulation, TODO Add labels!}
     \label{fig:incremental_times}
 \end{figure}
 
-% TODO
-I think this would look much better as trees per second, but this was easier
-for late-night me. Also none of these graphs have axes labels.
+The process described in Algorithm~\ref{alg:dp_alg}
+took nearly a minute to compute the distribution of species trees for the first tree,
+also creating the reusable state for every node in the million-leaf tree.
+For subsequent trees, however, only partial
+applications of the algorithm must be made to update species topologies, and
+\tskit{} was able to process roughly 110 trees per second, resulting in an overall
+runtime of 7 minutes and 8 seconds. Both the simulation and species tree analysis
+were run on a 2015 MacBook Pro with 8GB of RAM (small flex).
 
-It is worth noting that this algorithm can be used very broadly, but is optimized
-for a particular use-case. The combinatorial method of ranking trees contributes
-little to the overall runtime because the species trees we are ranking are very
-small. More efficient indexing methods may be useful when computing on larger
-numbers of species. Additionally, the higher the correlation between trees the
-better the gains from using an incremental approach. Current inference methods
+This simulation portrays an optimal use case for this algorithm. With the tree
+sequence being nearly monophyletic, the $p$ term in the algorithm complexity is
+nearly nothing. Tree sequences with much more intra-species diversity will express
+more species tree topologies and inflate the algorithm state. But ultimately this
+overhead is limited by the number of species, $p$, and not by sample size, so will
+not have an overwhelming impact on performance. The combinatorial method of ranking
+species trees works elegantly in these use cases where $p$ is small and therefore has
+a negligible contribution to the overall runtime. Analyses with larger numbers of
+species may benefit from a more efficient indexing mechanism.
+
+Additionally, higher correlation between adjacent trees implies
+better gains from using an incremental approach. Current inference methods
 like \tsinfer{} can generate succinct tree sequences from variant data, but might
 not achieve the compression exhibited in simulated tree sequences and thus
-are slower to compute on. Nevertheless, this does mean that improvements in
-inference technology have a compounding effect on the speed and accuracy
-at which incremental algorithms, such as this one, operate.
-
+are slower to compute on. Nevertheless, improvements in inference technology have
+a compounding effect as tree sequences become more accurate and more compressed,
+making incremental algorithms such as this one, faster and more insightful.
 \end{document}

@@ -2,6 +2,7 @@ import sys
 import msprime
 from tqdm import tqdm
 import time
+import math
 
 from util import area_plot, plot_speed
 
@@ -30,18 +31,29 @@ def run(sample_size):
     ts = great_apes(sample_size)
     species_topologies = []
     times = []
+    rates = []
+    iters_per_sec = 0
     start = time.time()
+    stop = start
     for top in tqdm(ts.count_topologies(), total=ts.num_trees):
+        times.append(time.time() - stop)
         stop = time.time()
-        times.append(stop - start)
+        iters_per_sec += 1
+        interval = stop - start
+        if interval >= 1:
+            for _ in range(math.floor(interval)):
+                rates.append(iters_per_sec / math.floor(interval))
+            iters_per_sec = 0
+            start = time.time()
+
         species_topologies.append(top[0, 1, 2, 3])
-        start = time.time()
 
     area_plot(species_topologies,
               ts.breakpoints(as_array=True)[:-1],
               {0: "human", 1: "chimp", 2: "gorilla", 3: "orangutan"},
               "great_apes_area_plot")
-    plot_speed(times, "incremental_times")
+    plot_speed(times, "time_per_tree")
+    plot_speed(rates, "trees_per_sec")
 
 
 if __name__ == '__main__':
