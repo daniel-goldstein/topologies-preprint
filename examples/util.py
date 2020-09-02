@@ -21,8 +21,9 @@ def area_plot(counters, breakpoints, leaf_labels, outfile):
     data = [[c[rank] for c in percents] for rank in ranks]
 
     pal = ["#9b59b6", "#e74c3c", "#1e90ff", "#2ecc71"]
-    # pal = sns.color_palette("Set1")
     plt.stackplot(breakpoints, data, labels=ranks, colors=pal, alpha=0.4)
+    plt.xlabel("Sequence position (Mb)")
+    plt.ylabel("Topology frequency")
 
     if not os.path.exists("plots"):
         os.mkdir("plots")

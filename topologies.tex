@@ -1,6 +1,7 @@
 \documentclass{article}
 % \twocolumn
 
+\usepackage[round]{natbib}
 \usepackage{geometry}
 \usepackage{amsmath, amsfonts, amsthm}
 \usepackage{algorithm, algpseudocode}
@@ -53,10 +54,12 @@ This approach is called an incremental algorithm and is the reason this
 we can quickly compute species trees distributions for tens of thousands of
 trees along the genome.
 
+* This needs many citations
+
 \section{Method}
 \subsection{Ranking tree topologies}
 
-Before we can discuss the algorithm for calculating a species trees, we
+Before we can discuss the algorithm for calculating species trees, we
 need a system to refer to and identify them uniquely.
 In the context of this method, we require that species trees be rooted,
 leaf-labelled trees with no unary nodes.
@@ -71,7 +74,7 @@ algorithms to count occurences of unique species tree topologies.
 \subsection{Species trees distributions on a single tree}
 
 The method for computing species trees distributions is inspired by
-\twisst, which works
+\twisst{}~\citep{Martin429}, which works
 by repetitively selecting samples, one from each species, and tracing the
 embedded tree that they form within the larger gene tree. Taking each
 sample to represent the species from which it was chosen, we identify
@@ -165,13 +168,13 @@ upward toward the root.
 Since there is a constant number of edges removed and inserted between trees
 in a tree sequence, this process takes only $O(\log(n)t(p)^2)$ time.
 
-\section{Discussion}
-We test this functionality by examining a \msprime{} simulation of four species:
+\section{Results}
+We test this functionality by examining a \msprime{}~\citep{msprime} simulation of four species:
 orangutan, gorilla, chimp and human. The simulation was seeded with the underlying
 species trees represented in Newick form as: (orangutan, (gorilla, (human, chimp))).
 Sampling 1 million 1mb genomes distributed evenly among the four species
 produced a \tskit{} tree sequence with 43 thousand trees.
-Figure~\ref{fig:great_apes} ilustrates the four unique
+Figure~\ref{fig:great_apes} illustrates the four unique
 species tree topologies represented in the tree sequence, the positions
 along the sequence they were observed, and the frequency of each weighted by
 the length of the sequence they span.
@@ -180,6 +183,7 @@ the length of the sequence they span.
     \begin{minipage}{.48\textwidth}
         \begin{subfigure}{\linewidth}
             \includegraphics[scale=0.48]{great_apes_area_plot.png}
+            \subcaption{Topology frequency per sequence position}
         \end{subfigure}
     \end{minipage}
     \begin{minipage}{.48\textwidth}
@@ -206,14 +210,15 @@ the length of the sequence they span.
         \centering
     \end{minipage}
     \centering
-    \caption{Great apes simulation species trees across the genome TODO add labels!}
+    \caption{Great apes simulated species trees along the genome TODO add labels!}
     \label{fig:great_apes}
 \end{figure}
 
-The results are overwhelmingly aligned with the species tree that seeded the
+The results are greatly aligned with the species tree that seeded the
 simulation. Though there do exist three alternative topologies, where the
-genetic material coalesces differently. On left, we can identify the exact
-intervals where these anomalous topologies are observed.
+genetic material coalesces differently. Figure~\ref{fig:great_apes}a presents
+the genomic intervals that reflect these anomalous topologies since the algorithm
+provides per-tree granularity.
 
 The performance benefits of using an incremental approach is evident when
 examining the execution time per tree. Figure~\ref{fig:incremental_times}
@@ -222,16 +227,17 @@ for the great apes simulation.
 \begin{figure}[H]
     \includegraphics[height=6cm]{trees_per_sec.png}
     \centering
-    \caption{Trees processed per second across great apes simulation, TODO Add labels!}
+    \caption{Trees processed per second for great apes simulation, TODO Add labels!}
     \label{fig:incremental_times}
 \end{figure}
 
 The process described in Algorithm~\ref{alg:dp_alg}
-took nearly a minute to compute the distribution of species trees for the first tree,
-also creating the reusable state for every node in the million-leaf tree.
-For subsequent trees, however, only partial
-applications of the algorithm must be made to update species topologies, and
-\tskit{} was able to process roughly 110 trees per second, resulting in an overall
+took nearly a minute to compute the distribution of species trees for the first tree.
+At this rate, it would take nearly 30 days to process the entire tree sequence if
+each tree were considered independently and in serial.
+With the incremental algorithm, however, only partial applications of the algorithm
+must be made to update the per-node species topologies in subsequent trees, allowing
+\tskit{} to process roughly 110 trees per second and resulting in an overall
 runtime of 7 minutes and 8 seconds. Both the simulation and species tree analysis
 were run on a 2015 MacBook Pro with 8GB of RAM (small flex).
 
@@ -240,16 +246,22 @@ sequence being nearly monophyletic, the $p$ term in the algorithm complexity is
 nearly nothing. Tree sequences with much more intra-species diversity will express
 more species tree topologies and inflate the algorithm state. But ultimately this
 overhead is limited by the number of species, $p$, and not by sample size, so will
-not have an overwhelming impact on performance. The combinatorial method of ranking
+dominate performance. The combinatorial method of ranking
 species trees works elegantly in these use cases where $p$ is small and therefore has
 a negligible contribution to the overall runtime. Analyses with larger numbers of
 species may benefit from a more efficient indexing mechanism.
 
 Additionally, higher correlation between adjacent trees implies
 better gains from using an incremental approach. Current inference methods
-like \tsinfer{} can generate succinct tree sequences from variant data, but might
-not achieve the compression exhibited in simulated tree sequences and thus
+like \tsinfer{}~\citep{tsinfer} can generate succinct tree sequences from variant data,
+but might not achieve the compression factor of simulated tree sequences and thus
 are slower to compute on. Nevertheless, improvements in inference technology have
-a compounding effect as tree sequences become more accurate and more compressed,
-making incremental algorithms such as this one, faster and more insightful.
+a compounding effect as tree sequences become more compressed and more accurate,
+making incremental algorithms such as this faster and more insightful.
+
+\section{Discussion}
+
+
+\bibliographystyle{plainnat}
+\bibliography{topologies}
 \end{document}

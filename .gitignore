@@ -1,6 +1,9 @@
 *.log
 *.aux
 *.pdf
+*.bbl
+*.blg
+examples/plots
 topenv/
 __pycache__/
 .DS_store

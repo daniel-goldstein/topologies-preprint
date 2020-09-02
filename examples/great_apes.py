@@ -30,13 +30,11 @@ def great_apes(sample_size):
 def run(sample_size):
     ts = great_apes(sample_size)
     species_topologies = []
-    times = []
     rates = []
     iters_per_sec = 0
     start = time.time()
     stop = start
     for top in tqdm(ts.count_topologies(), total=ts.num_trees):
-        times.append(time.time() - stop)
         stop = time.time()
         iters_per_sec += 1
         interval = stop - start
@@ -52,7 +50,6 @@ def run(sample_size):
               ts.breakpoints(as_array=True)[:-1],
               {0: "human", 1: "chimp", 2: "gorilla", 3: "orangutan"},
               "great_apes_area_plot")
-    plot_speed(times, "time_per_tree")
     plot_speed(rates, "trees_per_sec")
 
 
