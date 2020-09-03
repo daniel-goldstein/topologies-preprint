@@ -18,6 +18,7 @@ def great_apes(sample_size):
         length=1e6,
         samples=spec.sample(human=sample_size, chimp=sample_size, gorilla=sample_size, orangutan=sample_size),
         recombination_rate=1e-8,
+        random_seed=1,
         demography=spec)
 
     print(

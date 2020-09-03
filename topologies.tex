@@ -76,11 +76,12 @@ algorithms to count occurences of unique species tree topologies.
 The method for computing species trees distributions is inspired by
 \twisst{}~\citep{Martin429}, which works
 by repetitively selecting samples, one from each species, and tracing the
-embedded tree that they form within the larger gene tree. Taking each
-sample to represent the species from which it was chosen, we identify
-the species tree topology reflected by that single sample combination.
+embedded tree that they form within the larger gene tree.
+We can identify the species tree topology supported by that single sample
+combination by taking each sample to represent the species from which it
+was chosen.
 Tallying the number of sample combinations that
-reflect each unique topology gives a distribution of species trees
+reflect each unique topology yields a distribution of species trees
 embedded in the single gene tree. By exhausting all sample combinations,
 we obtain an exact distribution.
 
@@ -167,6 +168,7 @@ Instead we need only ``pick up'' the previous algorithm at $u$ and traverse
 upward toward the root.
 Since there is a constant number of edges removed and inserted between trees
 in a tree sequence, this process takes only $O(\log(n)t(p)^2)$ time.
+% TODO This could probably be expanded on
 
 \section{Results}
 We test this functionality by examining a \msprime{}~\citep{msprime} simulation of four species:
@@ -190,27 +192,27 @@ the length of the sequence they span.
         \begin{minipage}{.4\textwidth}
             \begin{subfigure}[b]{\linewidth}
                 \includegraphics[scale=0.3]{tree_0.png}
-                \subcaption{1.79\% weighted}
+                \subcaption{1.85\% weighted}
             \end{subfigure}
             \begin{subfigure}[b]{\linewidth}
                 \includegraphics[scale=0.3]{tree_1.png}
-                \subcaption{1.79\% weighted}
+                \subcaption{1.67\% weighted}
             \end{subfigure}
         \end{minipage}
         \begin{minipage}{.4\textwidth}
             \begin{subfigure}[b]{\linewidth}
                 \includegraphics[scale=0.3]{tree_2.png}
-                \subcaption{96.41\% weighted}
+                \subcaption{96.43\% weighted}
             \end{subfigure}
             \begin{subfigure}[b]{\linewidth}
                 \includegraphics[scale=0.3]{tree_3.png}
-                \subcaption{0.01\% weighted}
+                \subcaption{0.06\% weighted}
             \end{subfigure}
         \end{minipage}
         \centering
     \end{minipage}
     \centering
-    \caption{Great apes simulated species trees along the genome TODO add labels!}
+    \caption{Great apes simulated species trees along the genome}
     \label{fig:great_apes}
 \end{figure}
 
@@ -227,7 +229,7 @@ for the great apes simulation.
 \begin{figure}[H]
     \includegraphics[height=6cm]{trees_per_sec.png}
     \centering
-    \caption{Trees processed per second for great apes simulation, TODO Add labels!}
+    \caption{Trees processed per second for great apes simulation}
     \label{fig:incremental_times}
 \end{figure}
 
@@ -237,9 +239,9 @@ At this rate, it would take nearly 30 days to process the entire tree sequence i
 each tree were considered independently and in serial.
 With the incremental algorithm, however, only partial applications of the algorithm
 must be made to update the per-node species topologies in subsequent trees, allowing
-\tskit{} to process roughly 110 trees per second and resulting in an overall
+\tskit{} to process roughly 110 trees per second resulting in an overall
 runtime of 7 minutes and 8 seconds. Both the simulation and species tree analysis
-were run on a 2015 MacBook Pro with 8GB of RAM (small flex).
+were run on a 2015 MacBook Pro with 8GB of RAM.
 
 This simulation portrays an optimal use case for this algorithm. With the tree
 sequence being nearly monophyletic, the $p$ term in the algorithm complexity is

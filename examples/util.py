@@ -1,13 +1,14 @@
 import os
 import collections
 import matplotlib.pyplot as plt
-# import seaborn as sns
 
 import tskit
 
 
 def plot_speed(times, outfile):
     plt.plot(range(len(times)), times)
+    plt.xlabel("Runtime of species tree analysis (s)")
+    plt.ylabel("Trees processed per second")
     plt.savefig(f"plots/{outfile}.png")
     plt.close()
 

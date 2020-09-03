@@ -1,6 +1,6 @@
-.PHONY: great_apes_sim images
-great_apes_sim: great_apes.py
-	python3 great_apes.py 250000
+.PHONY: data images
+data: great_apes.py
+	python3 great_apes.py 25000
 
 images:
 	cp plots/* ../images/
