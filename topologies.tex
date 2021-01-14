@@ -111,8 +111,7 @@ to trees with any number of polytomies.
 \begin{figure}[H]
     \includegraphics[scale=0.5]{dp_alg}
     \centering
-    \caption{Counting embedded species trees at an internal node}
-    \label{fig:dp_alg}
+    \caption{Counting embedded species trees at an internal node}\label{fig:dp_alg}
 \end{figure}
 
 The algorithm state at each node is the unique topologies beneath that node,
@@ -124,30 +123,29 @@ product of the states of $u$'s children to discover disjoint species trees that
 can be combined under $u$.
 
 \begin{algorithm}
-    \caption{Computing species tree topologies in a single gene tree}
-    \label{alg:dp_alg}
+    \caption{Computing species tree topologies in a single gene tree}\label{alg:dp_alg}
     \begin{algorithmic}
-        \State state = []
+        \State{state = []}
 
         \ForAll{$u$ in leaves}
-        \State state[$u$] $\leftarrow$ \{(species(u)): 0\} // The rank of a root leaf is 0
-        \EndFor
+            \State{state[$u$] $\leftarrow$ \{u.species: 0\} // The rank of a root leaf is 0}
+        \EndFor{}
 
         \ForAll{$u$ in postorder internal nodes}
-            \State topologies = \{\}
-            \State topologies $\leftarrow$ propagate child topologies // TODO
-            \State topologies $\leftarrow$ join disjoint child topologies // TODO
-            \State state[$u$] = topologies
-        \EndFor
-        \State \Return state[root]
+            \State{topologies = \{\}}
+            \State{topologies $\leftarrow$ propagate child topologies // TODO}
+            \State{topologies $\leftarrow$ join disjoint child topologies // TODO}
+            \State{state[$u$] = topologies}
+        \EndFor{}
+        \State{\Return{state[root]}}
     \end{algorithmic}
 \end{algorithm}
-If we let $t(p)$ be the number of unique tree topologies with $p$ leaves,
+If we let $\tau(p)$ be the number of unique tree topologies with $p$ leaves,
 we get that the algorithmic complexity is
 \[
-    O(n \big(\sum_{i=1}^p t(i)\big)^2) = O(n t(p)^2)
+    O(n {\big(\sum_{i=1}^p \tau(i)\big)}^2) = O(n {\tau(p)}^2)
 \]
-since $t(p)$ grows factorially in $p$. We know however that $p \ll n$, so is
+since $\tau(p)$ grows factorially in $p$. We know however that $p \ll n$, so is
 dominated by a runtime linear in $n$.
 
 This algorithm also has the nice property that it works on gene trees
@@ -168,7 +166,7 @@ need to compute the topologies within the subtree.
 Instead we need only ``pick up'' the previous algorithm at $u$ and traverse
 upward toward the root.
 Since there is a constant number of edges removed and inserted between trees
-in a tree sequence, this process takes only $O(\log(n)t(p)^2)$ time.
+in a tree sequence, this process takes only $O(\log(n){\tau(p)}^2)$ time.
 % TODO This could probably be expanded on
 
 
@@ -184,38 +182,49 @@ along the sequence they were observed, and the frequency of each weighted by
 the length of the sequence they span.
 
 \begin{figure}[H]
-    \begin{minipage}{.48\textwidth}
+    \centering
+    \begin{minipage}{.9\textwidth}
         \begin{subfigure}{\linewidth}
+            \centering
             \includegraphics[scale=0.48]{great_apes_area_plot.png}
             \subcaption{Topology frequency per sequence position}
         \end{subfigure}
     \end{minipage}
-    \begin{minipage}{.48\textwidth}
-        \begin{minipage}{.4\textwidth}
+    % TODO Maybe print out these percentages so they don't go stale
+    % TODO Text is ugly for the trees
+    \begin{minipage}{.9\textwidth}
+        \centering
+        \fontsize{2}{5}\selectfont
+        \begin{minipage}{.24\textwidth}
             \begin{subfigure}[b]{\linewidth}
-                \includesvg[scale=0.3]{tree_0}
+                \centering
+                \includesvg[scale=0.4]{tree_0}
                 \subcaption{1.85\% weighted}
             \end{subfigure}
+        \end{minipage}
+        \begin{minipage}{.24\textwidth}
             \begin{subfigure}[b]{\linewidth}
-                \includesvg[scale=0.3]{tree_1}
+                \centering
+                \includesvg[scale=0.4]{tree_1}
                 \subcaption{1.67\% weighted}
             \end{subfigure}
         \end{minipage}
-        \begin{minipage}{.4\textwidth}
+        \begin{minipage}{.24\textwidth}
             \begin{subfigure}[b]{\linewidth}
-                \includesvg[scale=0.3]{tree_2}
+                \centering
+                \includesvg[scale=0.4]{tree_2}
                 \subcaption{96.43\% weighted}
             \end{subfigure}
+        \end{minipage}
+        \begin{minipage}{.24\textwidth}
             \begin{subfigure}[b]{\linewidth}
-                \includesvg[scale=0.3]{tree_3}
+                \centering
+                \includesvg[scale=0.4]{tree_3}
                 \subcaption{0.06\% weighted}
             \end{subfigure}
         \end{minipage}
-        \centering
     \end{minipage}
-    \centering
-    \caption{Great apes simulated species trees along the genome}
-    \label{fig:great_apes}
+    \caption{Great apes simulated species trees along the genome}\label{fig:great_apes}
 \end{figure}
 
 The results are align well with the species tree that seeded the
@@ -231,8 +240,7 @@ for the great apes simulation.
 \begin{figure}[H]
     \includegraphics[height=6cm]{trees_per_sec.png}
     \centering
-    \caption{Trees processed per second for great apes simulation}
-    \label{fig:incremental_times}
+    \caption{Trees processed per second for great apes simulation}\label{fig:incremental_times}
 \end{figure}
 
 The process described in Algorithm~\ref{alg:dp_alg}

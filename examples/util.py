@@ -23,7 +23,8 @@ def area_plot(counters, breakpoints, leaf_labels, outfile):
     ranks = list(sorted(set().union(*(c.keys() for c in percents))))
     data = [[c[rank] for c in percents] for rank in ranks]
 
-    pal = ["#9b59b6", "#e74c3c", "#1e90ff", "#2ecc71"]
+    pal = ["#9b59b6", "#e74c3c", "#1e90ff", "#2ecc71", "#2ecc71"]
+    plt.figure(figsize=(10, 5))
     plt.stackplot(breakpoints, data, labels=ranks, colors=pal, alpha=0.4)
     plt.xlabel("Sequence position (Mb)")
     plt.ylabel("Topology frequency")
@@ -55,11 +56,12 @@ def area_plot(counters, breakpoints, leaf_labels, outfile):
             "times.",
             f"({percents[rank]:.2f}% weighted)",
         )
-        t = tskit.Tree.unrank(rank, len(leaf_labels))
+        t = tskit.Tree.unrank(len(leaf_labels), rank)
         t.draw_svg(
             path=f"plots/tree_{i}.svg",
             node_labels=leaf_labels,
-            style=f".tree .node .edge {{ stroke: {pal[i]} }}",
+            style=f".tree .node .edge {{ stroke: {pal[i]} }}"
+            f".tree .node > text {{ font-size: 15px }}",
             size=(350, 250),
             order="tree",
         )

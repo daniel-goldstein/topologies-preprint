@@ -3,29 +3,25 @@ import msprime
 from tqdm import tqdm
 import time
 import math
+import tskit
 
 from util import area_plot, plot_speed
 
 
-def great_apes(sample_size):
-    spec = msprime.parse_species_tree(
+def great_apes(sample_size, initial_size):
+    spec = msprime.species_trees.parse_species_tree(
         "(((human:5.6,chimp:5.6):3.0,gorilla:8.6):9.4,orangutan:18.0)",
-        Ne=20000,
+        initial_size=initial_size,
         branch_length_units="myr",
         generation_time=28,
     )
 
-    species_ts = msprime.simulate(
-        length=1e6,
-        samples=spec.sample(
-            human=sample_size,
-            chimp=sample_size,
-            gorilla=sample_size,
-            orangutan=sample_size,
-        ),
+    species_ts: tskit.TreeSequence = msprime.sim_ancestry(
+        sequence_length=1e6,
+        samples={j: sample_size for j in range(4)},
+        demography=spec,
         recombination_rate=1e-8,
         random_seed=1,
-        demography=spec,
     )
 
     print(
@@ -38,8 +34,8 @@ def great_apes(sample_size):
     return species_ts
 
 
-def run(sample_size):
-    ts = great_apes(sample_size)
+def run(sample_size, initial_size):
+    ts = great_apes(sample_size, initial_size)
     species_topologies = []
     rates = []
     iters_per_sec = 0
@@ -67,4 +63,4 @@ def run(sample_size):
 
 
 if __name__ == "__main__":
-    run(int(sys.argv[1]))
+    run(int(sys.argv[1]), int(sys.argv[2]))

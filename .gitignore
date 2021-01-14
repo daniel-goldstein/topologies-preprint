@@ -4,6 +4,7 @@
 *.bbl
 *.blg
 *.svg
+*.png
 examples/plots
 svg-inkscape
 topenv/
