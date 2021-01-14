@@ -2,6 +2,7 @@
 % \twocolumn
 
 \usepackage[round]{natbib}
+\usepackage{svg}
 \usepackage{geometry}
 \usepackage{amsmath, amsfonts, amsthm}
 \usepackage{algorithm, algpseudocode}
@@ -170,6 +171,7 @@ Since there is a constant number of edges removed and inserted between trees
 in a tree sequence, this process takes only $O(\log(n)t(p)^2)$ time.
 % TODO This could probably be expanded on
 
+
 \section{Results}
 We test this functionality by examining a \msprime{}~\citep{msprime} simulation of four species:
 orangutan, gorilla, chimp and human. The simulation was seeded with the underlying
@@ -191,21 +193,21 @@ the length of the sequence they span.
     \begin{minipage}{.48\textwidth}
         \begin{minipage}{.4\textwidth}
             \begin{subfigure}[b]{\linewidth}
-                \includegraphics[scale=0.3]{tree_0.png}
+                \includesvg[scale=0.3]{tree_0}
                 \subcaption{1.85\% weighted}
             \end{subfigure}
             \begin{subfigure}[b]{\linewidth}
-                \includegraphics[scale=0.3]{tree_1.png}
+                \includesvg[scale=0.3]{tree_1}
                 \subcaption{1.67\% weighted}
             \end{subfigure}
         \end{minipage}
         \begin{minipage}{.4\textwidth}
             \begin{subfigure}[b]{\linewidth}
-                \includegraphics[scale=0.3]{tree_2.png}
+                \includesvg[scale=0.3]{tree_2}
                 \subcaption{96.43\% weighted}
             \end{subfigure}
             \begin{subfigure}[b]{\linewidth}
-                \includegraphics[scale=0.3]{tree_3.png}
+                \includesvg[scale=0.3]{tree_3}
                 \subcaption{0.06\% weighted}
             \end{subfigure}
         \end{minipage}
@@ -216,7 +218,7 @@ the length of the sequence they span.
     \label{fig:great_apes}
 \end{figure}
 
-The results are greatly aligned with the species tree that seeded the
+The results are align well with the species tree that seeded the
 simulation. Though there do exist three alternative topologies, where the
 genetic material coalesces differently. Figure~\ref{fig:great_apes}a presents
 the genomic intervals that reflect these anomalous topologies since the algorithm

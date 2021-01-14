@@ -17,7 +17,9 @@ def area_plot(counters, breakpoints, leaf_labels, outfile):
     percents = []
     for c in counters:
         total = sum(c.values())
-        percents.append(collections.Counter({k: (v / total) * 100 for k, v in c.items()}))
+        percents.append(
+            collections.Counter({k: (v / total) * 100 for k, v in c.items()})
+        )
     ranks = list(sorted(set().union(*(c.keys() for c in percents))))
     data = [[c[rank] for c in percents] for rank in ranks]
 
@@ -45,11 +47,19 @@ def area_plot(counters, breakpoints, leaf_labels, outfile):
         percents[rank] = (count / total_count) * 100
 
     for i, rank in enumerate(ranks):
-        print("Topology", rank, "seen", total[rank], "times.", f"({percents[rank]:.2f}% weighted)")
+        print(
+            "Topology",
+            rank,
+            "seen",
+            total[rank],
+            "times.",
+            f"({percents[rank]:.2f}% weighted)",
+        )
         t = tskit.Tree.unrank(rank, len(leaf_labels))
         t.draw_svg(
             path=f"plots/tree_{i}.svg",
             node_labels=leaf_labels,
             style=f".tree .node .edge {{ stroke: {pal[i]} }}",
             size=(350, 250),
-            order="tree")
+            order="tree",
+        )

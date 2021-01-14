@@ -3,7 +3,9 @@
 *.pdf
 *.bbl
 *.blg
+*.svg
 examples/plots
+svg-inkscape
 topenv/
 __pycache__/
 .DS_store
